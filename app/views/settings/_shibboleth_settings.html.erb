@@ -1,0 +1,67 @@
+ <table>
+     <tbody>
+       <tr>
+         <th>uniqueID header name</th>
+         <td><input type="text" id="settings_header_uniqueid" 
+                        value="<%= settings['header_uniqueid'] %>" 
+                name="settings[header_uniqueid]" >
+         </td>
+       </tr>
+       <tr>
+	<th>update uniqueID</th>
+        <td>
+           <%= check_box_tag 'settings[update_uniqueid]', nil, settings['update_uniqueid'] %>
+           <em><%= l(:comment_update_uniqueid) %></em>                                                                 
+        </td>
+      </tr>
+       <tr>
+         <th>surname header name</th>
+         <td><input type="text" id="settings_header_surname" 
+                        value="<%= settings['header_surname'] %>" 
+                name="settings[header_surname]" >
+         </td>
+       </tr>
+       <tr>
+	<th>update surname</th>
+        <td>
+           <%= check_box_tag 'settings[update_surname]', nil, settings['update_surname'] %>
+           <em><%= l(:comment_update_surname) %></em>                                                                 
+        </td>
+      </tr>
+       <tr>
+         <th>givenName header name</th>
+         <td><input type="text" id="settings_header_givenname" 
+                        value="<%= settings['header_givenname'] %>" 
+                name="settings[header_givenname]" >
+         </td>
+       </tr>
+       <tr>
+	<th>update givenname</th>
+        <td>
+           <%= check_box_tag 'settings[update_givenname]', nil, settings['update_givenname'] %>
+           <em><%= l(:comment_update_givenname) %></em>                                                                 
+        </td>
+      </tr>
+       <tr>
+         <th>mail header name</th>
+         <td><input type="text" id="settings_header_mail" 
+                        value="<%= settings['header_mail'] %>" 
+                name="settings[header_mail]" >
+         </td>
+       </tr>
+       <tr>
+	<th>update mail</th>
+        <td>
+           <%= check_box_tag 'settings[update_mail]', nil, settings['update_mail'] %>
+           <em><%= l(:comment_update_mail) %></em>                                                                 
+        </td>
+      </tr>
+      <tr>
+        <th>Disable the local login form</th>
+        <td>
+          <%= check_box_tag 'settings[disable_local_login]', nil, settings['disable_local_login'] %>
+          <em><%= l(:comment_disable_local_login) %></em>
+        </td>
+      </tr>
+    </tbody>
+  </table>

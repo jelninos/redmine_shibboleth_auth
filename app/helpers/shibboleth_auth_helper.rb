@@ -77,7 +77,7 @@ module ShibbolethAuthHelper
       #user.save
       else
         successful_authentication(user)
-        return
+        return true
     end
 
     #successful_authentication(user)  

@@ -51,9 +51,20 @@ module ShibbolethAuthHelper
           # Create on the fly
           user.random_password
           user.register
+          case Setting.self_registration
+          when '1'
+            register_by_email_activation(user) do
+              onthefly_creation_failed(user)
+            end
+          when '3'
             register_automatically(user) do
               onthefly_creation_failed(user)
             end
+          else
+            register_manually_by_administrator(user) do
+              onthefly_creation_failed(user)
+            end
+          end
 
       return true
 
@@ -65,14 +76,7 @@ module ShibbolethAuthHelper
 
       #user.save
       else
-
-      # Valid user
-      if user.active?
         successful_authentication(user)
-      else
-        handle_inactive_user(user)
-      end
-
         return true
     end
 

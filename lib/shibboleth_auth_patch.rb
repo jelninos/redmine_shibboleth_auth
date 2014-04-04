@@ -6,7 +6,7 @@ module ShibbolethAuthPatch
     base.class_eval do
       unloadable # Send unloadable so it will not be unloaded in development
 
-      # override the login action (account controller)
+      # override the 'login' action (account controller)
       # alias_method_chain allow use of login_with_shibboleth and login_without_shibboleth methods
       alias_method_chain :login, :shibboleth
      
@@ -19,11 +19,29 @@ module ShibbolethAuthPatch
   module InstanceMethods
 
     def login_with_shibboleth
-      if shibboleth_authenticate  == true
+      # if shibboleth is disable -> call the original login method
+      if Setting.plugin_redmine_shibboleth_auth['enable_shibboleth'].nil?
+        login_without_shibboleth
+        return 
+      end
+
+      if shibboleth_authenticate == true
+        # the shibboleth login as succeeded
+        # a redirecton is already set
+        # do the return
         return
       end
-      
-      login_without_shibboleth
+  
+      # the shibboleth login as failed.
+      # - if the option 'use_only_shibboleth' is ON -> Access Denied 
+      # - else call the original login method
+      logger.info(Setting.plugin_redmine_shibboleth_auth['use_only_shibboleth'])
+      if Setting.plugin_redmine_shibboleth_auth['use_only_shibboleth'] == 'on'
+        render_error "Access Denied (base on your shibboleth informations)"
+        return
+      else
+        login_without_shibboleth
+      end
     end
 
     def shibboleth_authenticate
@@ -44,12 +62,12 @@ module ShibbolethAuthPatch
       # if no user found with this uniqueID
       unless user
         # try to create an account
-        logger.info("try to create an account")
+        logger.info("try to create a shibboleth account")
 
-        # Self-registration off
-        unless Setting.self_registration?
-          logger.info("self-registration off ! retdirect to home...")
-          (redirect_to(home_url); return) 
+        # create a new user account only if 'enable_autocreate_account' option is ON
+        if Setting.plugin_redmine_shibboleth_auth['enable_autocreate_account'].nil?
+          logger.info("shibboleth autocreate account is off !")
+          return false
         end
 
         # Create on the fly

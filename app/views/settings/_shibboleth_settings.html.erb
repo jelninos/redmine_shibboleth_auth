@@ -12,6 +12,12 @@
     </label>
     <%= check_box_tag 'settings[use_only_shibboleth]', nil, settings['use_only_shibboleth'] %>
   </p>
+  <p>
+    <label for="settings_enable_autocreate_account">
+    Auto-create shibboleth account
+    </label>
+    <%= check_box_tag 'settings[enable_autocreate_account]', nil, settings['enable_autocreate_account'] %>
+  </p>
 </div>
 
 <div class="box">

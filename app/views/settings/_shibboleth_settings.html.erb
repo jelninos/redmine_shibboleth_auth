@@ -1,67 +1,50 @@
- <table>
-     <tbody>
-       <tr>
-         <th>uniqueID header name</th>
-         <td><input type="text" id="settings_header_uniqueid" 
-                        value="<%= settings['header_uniqueid'] %>" 
-                name="settings[header_uniqueid]" >
-         </td>
-       </tr>
-       <tr>
-	<th>update uniqueID</th>
-        <td>
-           <%= check_box_tag 'settings[update_uniqueid]', nil, settings['update_uniqueid'] %>
-           <em><%= l(:comment_update_uniqueid) %></em>                                                                 
-        </td>
-      </tr>
-       <tr>
-         <th>surname header name</th>
-         <td><input type="text" id="settings_header_surname" 
-                        value="<%= settings['header_surname'] %>" 
-                name="settings[header_surname]" >
-         </td>
-       </tr>
-       <tr>
-	<th>update surname</th>
-        <td>
-           <%= check_box_tag 'settings[update_surname]', nil, settings['update_surname'] %>
-           <em><%= l(:comment_update_surname) %></em>                                                                 
-        </td>
-      </tr>
-       <tr>
-         <th>givenName header name</th>
-         <td><input type="text" id="settings_header_givenname" 
-                        value="<%= settings['header_givenname'] %>" 
-                name="settings[header_givenname]" >
-         </td>
-       </tr>
-       <tr>
-	<th>update givenname</th>
-        <td>
-           <%= check_box_tag 'settings[update_givenname]', nil, settings['update_givenname'] %>
-           <em><%= l(:comment_update_givenname) %></em>                                                                 
-        </td>
-      </tr>
-       <tr>
-         <th>mail header name</th>
-         <td><input type="text" id="settings_header_mail" 
-                        value="<%= settings['header_mail'] %>" 
-                name="settings[header_mail]" >
-         </td>
-       </tr>
-       <tr>
-	<th>update mail</th>
-        <td>
-           <%= check_box_tag 'settings[update_mail]', nil, settings['update_mail'] %>
-           <em><%= l(:comment_update_mail) %></em>                                                                 
-        </td>
-      </tr>
-      <tr>
-        <th>Disable the local login form</th>
-        <td>
-          <%= check_box_tag 'settings[disable_local_login]', nil, settings['disable_local_login'] %>
-          <em><%= l(:comment_disable_local_login) %></em>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+<div class="box"> 
+ <h3>General configuration</h3>
+  <p>
+    <label for="settings_enable_shibboleth">
+    Activate shibboleth authentication
+    </label>
+    <%= check_box_tag 'settings[enable_shibboleth]', nil, settings['enable_shibboleth'] %>
+  </p>
+  <p>
+    <label for="settings_use_only_shibboleth">
+    Use only the shibboleth authentication
+    </label>
+    <%= check_box_tag 'settings[use_only_shibboleth]', nil, settings['use_only_shibboleth'] %>
+  </p>
+</div>
+
+<div class="box">
+  <h3>Attribute mapping</h3>
+  <p>
+    <label for="settings_header_uniqueid">
+      uniqueID header name
+      <span class="required"> *</span>
+    </label>
+    <input type="text" id="settings_header_uniqueid" value="<%= settings['header_uniqueid'] %>" name="settings[header_uniqueid]">
+  </p>
+  <p>
+    <label for="settings_header_surname">
+      surname header name
+      <span class="required"> *</span>
+    </label>
+    <input type="text" id="settings_header_surname" value="<%= settings['header_surname'] %>" name="settings[header_surname]">
+    <span>___ update user profile on each login </span><%= check_box_tag 'settings[update_surname]', nil, settings['update_surname'] %>
+  </p>
+  <p>
+    <label for="settings_header_givenname">
+      givenName header name
+      <span class="required"> *</span>
+    </label>
+    <input type="text" id="settings_header_givenname" value="<%= settings['header_givenname'] %>" name="settings[header_givenname]">
+    <span>___ update user profile on each login </span><%= check_box_tag 'settings[update_givenname]', nil, settings['update_givenname'] %>
+  </p>
+  <p>
+    <label for="settings_header_mail">
+      mail header name 
+      <span class="required"> *</span>
+    </label>
+    <input type="text" id="settings_header_mail" value="<%= settings['header_mail'] %>" name="settings[header_mail]">
+    <span>___ update user profile on each login </span><%= check_box_tag 'settings[update_mail]', nil, settings['update_mail'] %>
+  </p>
+</div>

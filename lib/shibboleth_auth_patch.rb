@@ -56,8 +56,25 @@ module ShibbolethAuthPatch
         return false
       end
 
+      surname = get_attribute_value('surname')
+      if surname.blank?
+        return false
+      end
+
+      givenname = get_attribute_value('givenname')
+      if givenname.blank?
+        return false
+      end
+
+      mail = get_attribute_value('mail')
+      if mail.blank?
+        return false
+      end
+ 
+
       # search a user with this uniqueID
       user = User.find_by_login(uniqueid)
+      logger.info("auto : " + Setting.plugin_redmine_shibboleth_auth['autocreate_account'])
 
       # if no user found with this uniqueID
       unless user
@@ -65,33 +82,17 @@ module ShibbolethAuthPatch
         logger.info("try to create a shibboleth account")
 
         # create a new user account only if 'enable_autocreate_account' option is ON
-        if Setting.plugin_redmine_shibboleth_auth['enable_autocreate_account'].nil?
+        if Setting.plugin_redmine_shibboleth_auth['autocreate_account'].eql? '0'
           logger.info("shibboleth autocreate account is off !")
           return false
         end
 
-        # Create on the fly
-        surname = get_attribute_value('surname')
-        if surname.blank?
-          return false
-        end
-
-        givenname = get_attribute_value('givenname')
-        if givenname.blank?
-          return false
-        end
-
-        mail = get_attribute_value('mail')
-        if mail.blank?
-          return false
-        end
- 
         user = User.new({:firstname => givenname, :lastname => surname, :mail => mail })
         user.login = uniqueid
         user.random_password
         user.register
 
-        case Setting.self_registration
+        case Setting.plugin_redmine_shibboleth_auth['autocreate_account'] 
         when '1'
           register_by_email_activation(user) do
             onthefly_creation_failed(user)

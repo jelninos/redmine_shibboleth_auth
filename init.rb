@@ -9,7 +9,7 @@ Redmine::Plugin.register :redmine_shibboleth_auth do
   settings :default => {
     'header_uniqueid' => 'uniqueID',
     'header_surname' => 'surname',
-    'header_givenname' => 'givenname',
+    'header_givenname' => 'givenName',
     'header_mail' => 'mail'     
    }, :partial => 'settings/shibboleth_settings'
 end

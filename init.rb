@@ -6,7 +6,12 @@ Redmine::Plugin.register :redmine_shibboleth_auth do
   description 'This is a plugin for Redmine'
   version '0.0.1'
 
-  settings :default => {'empty' => true}, :partial => 'settings/shibboleth_settings'
+  settings :default => {
+    'header_uniqueid' => 'uniqueID',
+    'header_surname' => 'surname',
+    'header_givenname' => 'givenname',
+    'header_mail' => 'mail'     
+   }, :partial => 'settings/shibboleth_settings'
 end
 
 ActionDispatch::Callbacks.to_prepare do 

@@ -93,10 +93,12 @@ module ShibbolethAuthPatch
         user.register
 
         case Setting.plugin_redmine_shibboleth_auth['autocreate_account'] 
-        when '1'
-          register_by_email_activation(user) do
-            onthefly_creation_failed(user)
-          end
+        # email activation don't work if the global setting 'Setting.self_registration' == false
+        #
+        #when '1'
+        #  register_by_email_activation(user) do
+        #    onthefly_creation_failed(user)
+        #  end
         when '3'
           register_automatically(user) do
             onthefly_creation_failed(user)

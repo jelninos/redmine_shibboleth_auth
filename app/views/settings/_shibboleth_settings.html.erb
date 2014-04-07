@@ -11,8 +11,11 @@
   <p>
     <%== label_tag("settings[autocreate_account]", l(:label_autocreate_account)) %> 
     <%== select_tag("settings[autocreate_account]",
-                 options_for_select([[l(:label_disabled), "0"], [l(:label_registration_activation_by_email), "1"],
-                 [l(:label_registration_manual_activation), "2"], [l(:label_registration_automatic_activation), "3"]], @settings['autocreate_account'].to_s),
+                 options_for_select([[l(:label_disabled), "0"], 
+                   #[l(:label_registration_activation_by_email), "1"],
+                   [l(:label_registration_manual_activation), "2"], 
+                   [l(:label_registration_automatic_activation), "3"]], 
+                   @settings['autocreate_account'].to_s),
                  :multiple => false,
                  :size => 1) %>
   </p>

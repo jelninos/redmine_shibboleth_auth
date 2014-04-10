@@ -5,5 +5,5 @@ en:
   label_use_only_shibboleth: Use only the shibboleth authentication
   label_autocreate_account: Auto-create account
   label_header_uniqueid: uniqueID header name
-  
+  label_shibb_login_handle: shibboleth login handle
   

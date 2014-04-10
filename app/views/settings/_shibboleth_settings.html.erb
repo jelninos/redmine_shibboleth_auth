@@ -19,6 +19,13 @@
                  :multiple => false,
                  :size => 1) %>
   </p>
+  <p>
+    <%== label_tag("settings[shibb_login_handle]", l(:label_shibb_login_handle)) %>
+    <%= text_field_tag 'settings[shibb_login_handle]', @settings['shibb_login_handle'] %> 
+    <br/><em>A full login url with target on the login page.<br/>
+    eg : https://www.redmine.org/Shibboleth.sso/Login?target=https://www.redmine.org/login<br/>
+    use only by the "shibobleth login link" on the login page</em>
+  </p>
 </div>
 
 <div class="box">

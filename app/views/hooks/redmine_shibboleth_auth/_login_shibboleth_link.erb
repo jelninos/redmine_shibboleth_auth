@@ -1,5 +1,9 @@
 <div id="shibboleth_link" style="margin-left: auto; margin-right: auto; margin-top: 30px; width: 250px;">
   <h2 style="text-align: center">
-    <a href="<%= Setting.plugin_redmine_shibboleth_auth['shibb_login_handle'] %>">Login with Shibboleth</a>
+    <a href="<%= 
+               shib_uri = Setting.plugin_redmine_shibboleth_auth['shibb_login_handle'] \
+                 + '?' \
+                 + URI::escape(request.env['QUERY_STRING'], '&')
+             %>">Login with Shibboleth</a>
   </h2>
 </div>

@@ -2,8 +2,7 @@
   <h2 style="text-align: center">
     <a href="<%= 
                shib_uri = Setting.plugin_redmine_shibboleth_auth['shibb_login_handle'] \
-                 + '?' \
-                 + URI::escape(request.env['QUERY_STRING'], '&')
+                 + URI::escape('?' + request.env['QUERY_STRING'], '?=&')
              %>">Login with Shibboleth</a>
   </h2>
 </div>

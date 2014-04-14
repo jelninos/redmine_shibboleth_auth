@@ -84,6 +84,7 @@ module ShibbolethAuthPatch
         # create a new user account only if 'enable_autocreate_account' option is ON
         if Setting.plugin_redmine_shibboleth_auth['autocreate_account'].eql? '0'
           logger.info("shibboleth autocreate account is off !")
+          flash[:error] = "Creation of a new account is prohibited. Please call the administrator."
           return false
         end
 

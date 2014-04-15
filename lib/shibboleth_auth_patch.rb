@@ -35,8 +35,8 @@ module ShibbolethAuthPatch
       # the shibboleth login as failed.
       # - if the option 'use_only_shibboleth' is ON -> Access Denied 
       # - else call the original login method
-      logger.info('shibb login failed and use_only_shibboleth is on')
       if Setting.plugin_redmine_shibboleth_auth['use_only_shibboleth'] == 'on'
+        logger.info('shibb login failed and use_only_shibboleth is on')
         render_error "Access Denied (base on your shibboleth informations)"
         return
       else
@@ -49,32 +49,37 @@ module ShibbolethAuthPatch
         return true
       end
 
+      conf = Setting.plugin_redmine_shibboleth_auth
+
       uniqueid = get_attribute_value('uniqueid')
 
       # no uniqueID header find, skip shibboleth processing
       if uniqueid.blank?
+        logger.info("shibb attr: " + conf['header_uniqueid'] + " not found")
         return false
       end
 
       surname = get_attribute_value('surname')
       if surname.blank?
+        logger.info("shibb attr: " + conf['header_surname'] + " not found")
         return false
       end
 
       givenname = get_attribute_value('givenname')
       if givenname.blank?
+        logger.info("shibb attr: " + conf['header_givenname'] + " not found")
         return false
       end
 
       mail = get_attribute_value('mail')
       if mail.blank?
+        logger.info("shibb attr: " + conf['header_mail'] + " not found")
         return false
       end
  
 
       # search a user with this uniqueID
       user = User.find_by_login(uniqueid)
-      logger.info("auto : " + Setting.plugin_redmine_shibboleth_auth['autocreate_account'])
 
       # if no user found with this uniqueID
       unless user
@@ -82,7 +87,7 @@ module ShibbolethAuthPatch
         logger.info("try to create a shibboleth account")
 
         # create a new user account only if 'enable_autocreate_account' option is ON
-        if Setting.plugin_redmine_shibboleth_auth['autocreate_account'].eql? '0'
+        if conf['autocreate_account'].eql? '0'
           logger.info("shibboleth autocreate account is off !")
           flash[:error] = "Creation of a new account is prohibited. Please call the administrator."
           return false
@@ -93,7 +98,7 @@ module ShibbolethAuthPatch
         user.random_password
         user.register
 
-        case Setting.plugin_redmine_shibboleth_auth['autocreate_account'] 
+        case conf['autocreate_account'] 
         # email activation don't work if the global setting 'Setting.self_registration' == false
         #
         #when '1'

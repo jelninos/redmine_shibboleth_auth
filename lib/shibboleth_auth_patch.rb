@@ -25,7 +25,7 @@ module ShibbolethAuthPatch
         return 
       end
 
-      if shibboleth_authenticate == true
+      if shibboleth_authenticate() == true
         # the shibboleth login as succeeded
         # a redirecton is already set
         # do the return
@@ -35,7 +35,7 @@ module ShibbolethAuthPatch
       # the shibboleth login as failed.
       # - if the option 'use_only_shibboleth' is ON -> Access Denied 
       # - else call the original login method
-      logger.info(Setting.plugin_redmine_shibboleth_auth['use_only_shibboleth'])
+      logger.info('shibb login failed and use_only_shibboleth is on')
       if Setting.plugin_redmine_shibboleth_auth['use_only_shibboleth'] == 'on'
         render_error "Access Denied (base on your shibboleth informations)"
         return

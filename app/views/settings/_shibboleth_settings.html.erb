@@ -1,64 +1,40 @@
-<div class="box"> 
- <h3>General configuration</h3>
+<% if params['shibboleth_authsource_exist'] %>
+<h3><%= l(:label_authsource_options) %><%= link_to l(:label_shibboleth_authsource), controller: 'auth_sources', action: 'edit', id: params[:shibboleth_authsource_id] %></h3>
+<% else %>
+<h3><%= l(:label_create_shibboleth_authsource) %><%= link_to l(:link_create_shibboleth_authsource), controller: 'account', action: 'create_shibboleth_authsource'   %></h3>
+<% end %>
   <p>
-    <%== label_tag("settings[enable_shibboleth]", l(:label_enable_shibboleth)) %>
+    <%= label_tag("settings[enable_shibboleth]", l(:label_enable_shibboleth)) %>
     <%= check_box_tag 'settings[enable_shibboleth]', nil, settings['enable_shibboleth'] %>
   </p>
   <p>
-    <%== label_tag("settings[use_only_shibboleth]", l(:label_use_only_shibboleth)) %>
+    <%= label_tag("settings[use_only_shibboleth]", l(:label_use_only_shibboleth)) %>
     <%= check_box_tag 'settings[use_only_shibboleth]', nil, settings['use_only_shibboleth'] %>
   </p>
   <p>
     <%== label_tag("settings[autocreate_account]", l(:label_autocreate_account)) %> 
     <%== select_tag("settings[autocreate_account]",
-                 options_for_select([[l(:label_disabled), "0"], 
+                 options_for_select([
+                   #[l(:label_disabled), "0"], 
                    #[l(:label_registration_activation_by_email), "1"],
                    [l(:label_registration_manual_activation), "2"], 
                    [l(:label_registration_automatic_activation), "3"]], 
                    @settings['autocreate_account'].to_s),
                  :multiple => false,
                  :size => 1) %>
+    <br/><em><%== l(:label_autocreate_comment) %></em>
+  </p>
+  <p>
+    <%== label_tag("settings[user_format]", l(:label_shibb_user_format)) %>
+    <%== select_tag("settings[user_format]",
+                 options_for_select(@options[:user_format],
+                   @settings['user_format'].to_s),
+                   :multiple => false,
+                   :size => 1) %>
+    <br/><em><%== l(:comment_shibb_user_format) %></em>
   </p>
   <p>
     <%== label_tag("settings[shibb_login_handle]", l(:label_shibb_login_handle)) %>
-    <%= text_field_tag 'settings[shibb_login_handle]', @settings['shibb_login_handle'] %> 
-    <br/><em>A full login url with target on the login page.<br/>
-    eg : https://www.redmine.org/Shibboleth.sso/Login?target=https://www.redmine.org/login<br/>
-    use only by the "shibobleth login link" on the login page</em>
+    <%== text_field_tag 'settings[shibb_login_handle]', @settings['shibb_login_handle'] %> 
+    <br/><em><%== l(:label_shibb_handle_comment) %></em>
   </p>
-</div>
-
-<div class="box">
-  <h3>Attribute mapping</h3>
-  <p>
-    <label for="settings_header_uniqueid">
-     uniqueid header name
-     <span class="required"> *</span>
-    </label>
-    <%= text_field_tag 'settings[header_uniqueid]', @settings['header_uniqueid'] %>
-  </p>
-  <p>
-    <label for="settings_header_surname">
-      surname header name
-      <span class="required"> *</span>
-    </label>
-    <%= text_field_tag 'settings[header_surname]', @settings['header_surname'] %>
-    <!-- <span>___ update user profile on each login </span><%= check_box_tag 'settings[update_surname]', nil, settings['update_surname'] %> -->
-  </p>
-  <p>
-    <label for="settings_header_givenname">
-      givenName header name
-      <span class="required"> *</span>
-    </label>
-    <%= text_field_tag 'settings[header_givenname]', @settings['header_givenname'] %>
-    <!-- <span>___ update user profile on each login </span><%= check_box_tag 'settings[update_givenname]', nil, settings['update_givenname'] %> -->
-  </p>
-  <p>
-    <label for="settings_header_mail">
-      mail header name 
-      <span class="required"> *</span>
-    </label>
-    <%= text_field_tag 'settings[header_mail]', @settings['header_mail'] %>
-    <!-- <span>___ update user profile on each login </span><%= check_box_tag 'settings[update_mail]', nil, settings['update_mail'] %> -->
-  </p>
-</div>

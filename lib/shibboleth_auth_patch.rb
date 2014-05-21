@@ -10,9 +10,10 @@ module ShibbolethAuthPatch
       # alias_method_chain allow use of login_with_shibboleth and login_without_shibboleth methods
       alias_method_chain :login, :shibboleth
      
-      # add shibboleth helper (in lib directory of this plugin) 
-      helper :shibboleth_auth
-      include ShibbolethAuthHelper
+      # add this shibboleth helper if need :  
+      # ./app/helpers/shibboleth_auth_helper.rb
+      #helper :shibboleth_auth
+      #include ShibbolethAuthHelper
     end
   end
 
@@ -37,11 +38,43 @@ module ShibbolethAuthPatch
       # - else call the original login method
       if Setting.plugin_redmine_shibboleth_auth['use_only_shibboleth'] == 'on'
         logger.info('shibb login failed and use_only_shibboleth is on')
-        render_error "Access Denied (base on your shibboleth informations)"
+        logger.info(flash[:error])
+        if flash[:error].blank?
+          flash[:error] = l(:notice_shibboleth_login_error)
+        end
+        redirect_to controller: 'account', action: 'shibb_error'
         return
       else
         login_without_shibboleth
       end
+    end
+
+    # prevent login loop on the login page
+    # for display the shibboleth login error, 
+    # use shibb_error action, not login action
+    # Redirect to home if no error message found
+    def shibb_error
+      if flash[:error].blank?
+        redirect_to home_url
+      end 
+    end
+
+    def create_shibboleth_authsource
+      @auth_source = AuthSource.new
+      @auth_source.type = 'AuthSourceShibboleth'
+      @auth_source.name = 'Shibboleth'
+      @auth_source.attr_login = 'uniqueID'
+      @auth_source.attr_firstname = 'givenName'
+      @auth_source.attr_lastname = 'surname'
+      @auth_source.attr_mail = 'mail'
+      
+      if @auth_source.save
+        flash[:notice] = l(:notice_successful_create)
+      else
+        flash[:error] = l(:notice_error_create_shibboleth_authsource)
+      end
+      
+      redirect_to url_for :controller => 'settings', :action => 'plugin', :id => 'redmine_shibboleth_auth'
     end
 
     def shibboleth_authenticate
@@ -50,33 +83,38 @@ module ShibbolethAuthPatch
       end
 
       conf = Setting.plugin_redmine_shibboleth_auth
+      shibb = AuthSourceShibboleth.first
 
-      uniqueid = get_attribute_value('uniqueid')
+      if shibb.blank?
+        logger.info('no authsource for shibboleth')
+        return false
+      end
+
+      uniqueid = request.env[shibb['attr_login']]
 
       # no uniqueID header find, skip shibboleth processing
       if uniqueid.blank?
-        logger.info("shibb attr: " + conf['header_uniqueid'] + " not found")
+        logger.info("shibb attr: " + 'uniqueid' + " not found")
         return false
       end
 
-      surname = get_attribute_value('surname')
+      surname  = request.env[shibb['attr_lastname']]
       if surname.blank?
-        logger.info("shibb attr: " + conf['header_surname'] + " not found")
+        logger.info("shibb attr: " + 'surname' + " not found")
         return false
       end
 
-      givenname = get_attribute_value('givenname')
+      givenname  = request.env[shibb['attr_firstname']]
       if givenname.blank?
-        logger.info("shibb attr: " + conf['header_givenname'] + " not found")
+        logger.info("shibb attr: " + 'givenname' + " not found")
         return false
       end
 
-      mail = get_attribute_value('mail')
+      mail = request.env[shibb['attr_mail']]
       if mail.blank?
-        logger.info("shibb attr: " + conf['header_mail'] + " not found")
+        logger.info("shibb attr: " + 'mail' + " not found")
         return false
       end
- 
 
       # search a user with this uniqueID
       user = User.find_by_login(uniqueid)
@@ -86,8 +124,8 @@ module ShibbolethAuthPatch
         # try to create an account
         logger.info("try to create a shibboleth account")
 
-        # create a new user account only if 'enable_autocreate_account' option is ON
-        if conf['autocreate_account'].eql? '0'
+        # create a new user account only if 'onthefly_register' option is ON
+        if ! shibb['onthefly_register']
           logger.info("shibboleth autocreate account is off !")
           flash[:error] = "Creation of a new account is prohibited. Please call the administrator."
           return false
@@ -95,6 +133,7 @@ module ShibbolethAuthPatch
 
         user = User.new({:firstname => givenname, :lastname => surname, :mail => mail })
         user.login = uniqueid
+        user.auth_source_id = shibb[:id]
         user.random_password
         user.register
 
@@ -116,10 +155,11 @@ module ShibbolethAuthPatch
         end
       else
         # Existing record
-        if user.active?
+        if user.active? 	
           successful_authentication(user)
         else
-          handle_inactive_user(user, home_url)
+	  shibb_error = url_for :controller => 'account', :action => 'shibb_error'
+          handle_inactive_user(user, shibb_error)
         end
       end
 

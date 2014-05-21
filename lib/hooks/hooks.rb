@@ -6,7 +6,7 @@ module RedmineShibbolethAuth;
 
       if (shibb_enable == 'on') && (!shibb_handle.blank?)
         context[:controller].send(:render_to_string, {
-          :partial => "hooks/redmine_shibboleth_auth/login_shibboleth_link",
+          :partial => "hooks/login_shibboleth_link",
           :locals => context
         })
       end 

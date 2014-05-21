@@ -1,5 +1,4 @@
 require 'shibboleth_auth_patch'
-require 'shibboleth_authsource_patch'
 require 'shibb_application_helper_patch'
 require 'hooks/hooks'
 
@@ -20,7 +19,6 @@ end
 # Controllers overrides
 ActionDispatch::Callbacks.to_prepare do 
   AccountController.send(:include, ShibbolethAuthPatch)
-  AuthSourcesController.send(:include, ShibbolethAuthSourcePatch)
   SettingsController.send(:include, ShibbolethPluginSettingsPatch)
 end
 

@@ -178,6 +178,7 @@ module ShibbolethAuthPatch
 
     def shibboleth_authenticate
       if User.current.logged?
+        redirect_to home_url
         return true
       end
 

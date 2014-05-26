@@ -9,6 +9,8 @@ module ShibbolethAuthPatch
       # override the 'login' action (account controller)
       # alias_method_chain allow use of login_with_shibboleth and login_without_shibboleth methods
       alias_method_chain :login, :shibboleth
+      alias_method_chain :onthefly_creation_failed, :shibboleth
+      alias_method_chain :register, :shibboleth
      
       # add this shibboleth helper if need :  
       # ./app/helpers/shibboleth_auth_helper.rb
@@ -38,7 +40,6 @@ module ShibbolethAuthPatch
       # - else call the original login method
       if Setting.plugin_redmine_shibboleth_auth['use_only_shibboleth'] == 'on'
         logger.info('shibb login failed and use_only_shibboleth is on')
-        logger.info(flash[:error])
         if flash[:error].blank?
           flash[:error] = l(:notice_shibboleth_login_error)
         end
@@ -46,6 +47,42 @@ module ShibbolethAuthPatch
         return
       else
         login_without_shibboleth
+      end
+    end
+
+    def register_with_shibboleth
+      if request.post? && !params[:shibboleth_register].blank?
+        conf = Setting.plugin_redmine_shibboleth_auth
+
+        user_params = params[:user] || {}
+        @user = User.new
+        @user.safe_attributes = user_params
+        @user.admin = false
+        @user.login = session[:auth_source_registration][:login]
+        @user.auth_source_id = session[:auth_source_registration][:auth_source_id]
+        @user.register
+
+        case conf['autocreate_account'] 
+        # email activation don't work if the global setting 'Setting.self_registration' == false
+        #
+        #when '1'
+        #  register_by_email_activation(user) do
+        #    onthefly_creation_failed(user)
+        #  end
+        when '3'
+          register_automatically(@user) do
+            session[:auth_source_registration] = nil
+            onthefly_creation_failed(@user, {:login => @user.login, :auth_source_id => @user.auth_source_id, :auth_source_shibboleth => true })
+          end
+        else
+          register_manually_by_administrator(@user) do
+            session[:auth_source_registration] = nil
+            onthefly_creation_failed(@user, {:login => @user.login, :auth_source_id => @user.auth_source_id, :auth_source_shibboleth => true })
+          end
+        end
+
+      else
+        register_without_shibboleth
       end
     end
 
@@ -77,21 +114,23 @@ module ShibbolethAuthPatch
       redirect_to url_for :controller => 'settings', :action => 'plugin', :id => 'redmine_shibboleth_auth'
     end
 
-    def shibboleth_authenticate
-      if User.current.logged?
-        return true
-      end
+    # Onthefly creation failed, display the registration form to fill/fix attributes
+    def onthefly_creation_failed_with_shibboleth(user, auth_source_options = { })
+      @user = user
+      session[:auth_source_registration] = auth_source_options unless auth_source_options.empty?
 
+      if !auth_source_options.empty? && auth_source_options[:auth_source_shibboleth] == true
+        render :action => 'shibb_register'
+      else
+        render :action => 'register'
+      end
+    end
+
+    def create_shibb_account
       conf = Setting.plugin_redmine_shibboleth_auth
       shibb = AuthSourceShibboleth.first
 
-      if shibb.blank?
-        logger.info('no authsource for shibboleth')
-        return false
-      end
-
       uniqueid = request.env[shibb['attr_login']]
-
       # no uniqueID header find, skip shibboleth processing
       if uniqueid.blank?
         logger.info("shibb attr: " + 'uniqueid' + " not found")
@@ -116,56 +155,68 @@ module ShibbolethAuthPatch
         return false
       end
 
+      # try to create an account
+      logger.info("try to create a shibboleth account")
+
+      # create a new user account only if 'onthefly_register' option is ON
+      if ! shibb['onthefly_register']
+        logger.info("shibboleth autocreate account is off !")
+        flash[:error] = "Creation of a new account is prohibited. Please call the administrator."
+        return false
+      end
+
+      user = User.new({:firstname => givenname, :lastname => surname, :mail => mail })
+      user.login = uniqueid
+      user.auth_source_id = shibb[:id]
+      user.random_password
+
+      # show the user registration form
+      onthefly_creation_failed(user, {:login => user.login, :auth_source_id => user.auth_source_id, :auth_source_shibboleth => true })
+
+      return true
+    end
+
+    def shibboleth_authenticate
+      if User.current.logged?
+        return true
+      end
+
+      conf = Setting.plugin_redmine_shibboleth_auth
+      shibb = AuthSourceShibboleth.first
+
+      if shibb.blank?
+        logger.info('no authsource for shibboleth')
+        return false
+      end
+
+      uniqueid = request.env[shibb['attr_login']]
+
+      # no uniqueID header find, skip shibboleth processing
+      if uniqueid.blank?
+        logger.info("shibb attr: " + 'uniqueid' + " not found")
+        return false
+      end
+
       # search a user with this uniqueID
       user = User.find_by_login(uniqueid)
 
       # if no user found with this uniqueID
       unless user
-        # try to create an account
-        logger.info("try to create a shibboleth account")
-
-        # create a new user account only if 'onthefly_register' option is ON
-        if ! shibb['onthefly_register']
-          logger.info("shibboleth autocreate account is off !")
-          flash[:error] = "Creation of a new account is prohibited. Please call the administrator."
-          return false
-        end
-
-        user = User.new({:firstname => givenname, :lastname => surname, :mail => mail })
-        user.login = uniqueid
-        user.auth_source_id = shibb[:id]
-        user.random_password
-        user.register
-
-        case conf['autocreate_account'] 
-        # email activation don't work if the global setting 'Setting.self_registration' == false
-        #
-        #when '1'
-        #  register_by_email_activation(user) do
-        #    onthefly_creation_failed(user)
-        #  end
-        when '3'
-          register_automatically(user) do
-            onthefly_creation_failed(user)
-          end
-        else
-          register_manually_by_administrator(user) do
-            onthefly_creation_failed(user)
-          end
-        end
+        #redirect_to controller: 'account', action: 'shibb_register'
+        create_shibb_account()
       else
         # Existing record
-        if user.active? 	
+        if user.active?
           successful_authentication(user)
         else
-	  shibb_error = url_for :controller => 'account', :action => 'shibb_error'
+          shibb_error = url_for :controller => 'account', :action => 'shibb_error'
           handle_inactive_user(user, shibb_error)
         end
       end
 
       return true
     end
-    
+
   end
 end
 

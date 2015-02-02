@@ -137,19 +137,19 @@ module ShibbolethAuthPatch
         return false
       end
 
-      surname  = request.env[shibb['attr_lastname']]
+      surname  = request.env[shibb['attr_lastname']].force_encoding("UTF-8")
       if surname.blank?
         logger.info("shibb attr: " + 'surname' + " not found")
         return false
       end
 
-      givenname  = request.env[shibb['attr_firstname']]
+      givenname  = request.env[shibb['attr_firstname']].force_encoding("UTF-8")
       if givenname.blank?
         logger.info("shibb attr: " + 'givenname' + " not found")
         return false
       end
 
-      mail = request.env[shibb['attr_mail']]
+      mail = request.env[shibb['attr_mail']].force_encoding("UTF-8")
       if mail.blank?
         logger.info("shibb attr: " + 'mail' + " not found")
         return false
